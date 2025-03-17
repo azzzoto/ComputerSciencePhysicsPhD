@@ -329,7 +329,7 @@ Execution time for N = 10000: 0.63775200 seconds
 ## 4.1 Question 1
 > Did you find any problems in running the codes for some N. If so, do you have an idea why?
 
-I haven't found any particular problems, but in Julia, for large $ N $, the execution time increases significantly. For $ N = 10^8 $, the execution time is high in vector multiplication, and for $ N = 10^4 $, it is high in matrix multiplication.
+I haven't found any particular problems, but in Julia, for large $N$, the execution time increases significantly. For $N = 10^8$, the execution time is high in vector multiplication, and for $N = 10^4$, it is high in matrix multiplication.
 
 ## 4.2 Question 2
 > Where you able to test correctly the sum and product of points 1-3? If so, how? If not, what was the problem?
