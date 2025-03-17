@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
+#include <math.h>
 
 void compute_product(double a, double *x, double *y, double *d, int N);
 bool test_result(double *d, int N, double expected_value);
@@ -63,7 +64,7 @@ void compute_product(double a, double *x, double *y, double *d, int N) {
 bool test_result(double *d, int N, double expected_value) {
     const double epsilon = 1e-5;  // tolerance for floating point comparison
     for (int i = 0; i < N; i++) {
-        if ((d[i] - expected_value) > epsilon || (expected_value - d[i]) > epsilon) {
+        if (fabs(d[i] - expected_value) > epsilon) {
             printf("Error at index %d: %.10f != %.10f\n", i, d[i], expected_value);
             return false;
         }

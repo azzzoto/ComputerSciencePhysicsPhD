@@ -1,7 +1,3 @@
-function compute_product(A, B)
-    return A .* B
-end
-
 # parameters
 N = [10, 100, 10_000]
 
@@ -12,7 +8,7 @@ for n in N
         # matrix definition and multiplication
         A = 3 .* ones(n, n)
         B = 7.1 .* ones(n, n)
-        C = compute_product(A, B)
+        C = A .* B
 
         expected_value = 3 * 7.1  
 
