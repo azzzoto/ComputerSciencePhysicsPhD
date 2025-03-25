@@ -1,6 +1,6 @@
-// given N as input, generate two vectors of size N, (x,y)
+// given N as input, generates two vectors of size N, (x,y)
 // where all elements of x=0.1 and y = 7.1 and save them to a file
-// the outputfilename should be created reading N and filename_prefix from the command line
+// the output filename should be created reading N and filename_prefix from the command line
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,7 +59,7 @@ void WriteToFile(double vector[], int N, char *filename)
 {
     FILE *file = fopen(filename, "w");
     if (file == NULL) {
-        printf("Errore nell'apertura del file %s\n", filename);
+        printf("Error opening file %s\n", filename);
         return;
     }
 

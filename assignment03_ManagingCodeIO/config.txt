@@ -1,0 +1,5 @@
+N=1000
+x_filename=vectorsN1000_x.dat
+y_filename=vectorsN1000_y.dat
+a=3.0
+output_prefix=result_ 
