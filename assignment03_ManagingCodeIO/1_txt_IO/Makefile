@@ -17,6 +17,6 @@ process: process.o
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm -f $(OBJS) $(TARGETS) *.dat
+	rm -f $(OBJS) $(TARGETS) *.dat *.conf
 
 .PHONY: all clean 

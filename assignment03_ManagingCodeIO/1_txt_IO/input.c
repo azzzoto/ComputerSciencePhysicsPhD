@@ -1,12 +1,14 @@
 // given N as input, generates two vectors of size N, (x,y)
 // where all elements of x=0.1 and y = 7.1 and save them to a file
 // the output filename should be created reading N and filename_prefix from the command line
+// also generates a configuration file for the process program
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 void WriteToFile(double vector[], int N, char *filename);
+void CreateConfigFile(int N, char *prefix);
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {
@@ -43,9 +45,13 @@ int main(int argc, char *argv[]) {
     WriteToFile(x, N, filename_x);
     WriteToFile(y, N, filename_y);
 
+    // Create configuration file
+    CreateConfigFile(N, prefix);
+
     printf("Vectors saved in files:\n");
     printf("x: %s\n", filename_x);
     printf("y: %s\n", filename_y);
+    printf("Configuration file: config.txt\n");
 
     // Free memory
     free(x);
@@ -69,3 +75,20 @@ void WriteToFile(double vector[], int N, char *filename)
 
     fclose(file);
 }
+
+void CreateConfigFile(int N, char *prefix)
+{
+    FILE *file = fopen("config.conf", "w");
+    if (file == NULL) {
+        printf("Error creating configuration file\n");
+        return;
+    }
+
+    fprintf(file, "N=%d\n", N);
+    fprintf(file, "x_filename=%sN%d_x.dat\n", prefix, N);
+    fprintf(file, "y_filename=%sN%d_y.dat\n", prefix, N);
+    fprintf(file, "a=3.0\n");
+    fprintf(file, "output_prefix=result_\n");
+
+    fclose(file);
+} 
