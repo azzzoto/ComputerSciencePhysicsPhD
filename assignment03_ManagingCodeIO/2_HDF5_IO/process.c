@@ -1,3 +1,8 @@
+// reads the configuration.conf file and the vectors from the .h5 files
+// calculates the vector d = ax + y
+// saves the result in a .h5 file
+
+// author: Giovanni Piccolo
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

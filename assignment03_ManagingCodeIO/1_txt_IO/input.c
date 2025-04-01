@@ -1,8 +1,9 @@
 // given N as input, generates two vectors of size N, (x,y)
-// where all elements of x=0.1 and y = 7.1 and save them to a file
-// the output filename should be created reading N and filename_prefix from the command line
+// where all elements of x=0.1 and y = 7.1 and save them to a .dat file
+// the output filenames should be created reading N and filename_prefix from the command line
 // also generates a configuration file for the process program
 
+// author: Giovanni Piccolo
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,9 +23,8 @@ int main(int argc, char *argv[]) {
     // Memory allocation for vectors
     double *x = (double *)malloc(N * sizeof(double));
     double *y = (double *)malloc(N * sizeof(double));
-    double *z = (double *)malloc(N * sizeof(double));
     
-    if (!x || !y || !z) {
+    if (!x || !y) {
         printf("Allocation error\n");
         return 1;
     }
@@ -38,6 +38,8 @@ int main(int argc, char *argv[]) {
     // Create file names
     char filename_x[256];
     char filename_y[256];
+    /* snprintf ensures that at most sizeof(filename_x)-1 
+    characters are written, preventing buffer overflow */
     snprintf(filename_x, sizeof(filename_x), "%sN%d_x.dat", prefix, N);
     snprintf(filename_y, sizeof(filename_y), "%sN%d_y.dat", prefix, N);
 
@@ -56,7 +58,6 @@ int main(int argc, char *argv[]) {
     // Free memory
     free(x);
     free(y);
-    free(z);
     
     return 0; 
 }

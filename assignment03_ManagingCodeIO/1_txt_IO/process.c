@@ -1,8 +1,13 @@
+// reads the configuration.conf file and the vectors from the .dat files
+// calculates the vector d = ax + y
+// saves the result in a .dat file
+
+// author: Giovanni Piccolo
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-// Structure for configuration options
+// Structure for configuration options (linked list)
 typedef struct config_option {
     char key[64];
     char value[256];
@@ -10,51 +15,11 @@ typedef struct config_option {
 } config_option_t;
 
 // Functions for configuration management
-config_option_t* read_config_file(const char* filename) {
-    FILE* file = fopen(filename, "r");
-    if (!file) return NULL;
-
-    config_option_t* current = NULL;
-    char line[320];  // 64 + 256 for key and value
-
-    while (fgets(line, sizeof(line), file)) {
-        char* key = strtok(line, "=");
-        char* value = strtok(NULL, "\n");
-        
-        if (key && value) {
-            config_option_t* new_option = malloc(sizeof(config_option_t));
-            strncpy(new_option->key, key, 63);
-            strncpy(new_option->value, value, 255);
-            new_option->prev = current;
-            current = new_option;
-        }
-    }
-
-    fclose(file);
-    return current;
-}
-
-const char* get_config_value(config_option_t* config, const char* key) {
-    config_option_t* current = config;
-    while (current != NULL) {
-        if (strcmp(current->key, key) == 0) {
-            return current->value;
-        }
-        current = current->prev;
-    }
-    return NULL;
-}
-
-void free_config(config_option_t* config) {
-    while (config != NULL) {
-        config_option_t* prev = config->prev;
-        free(config);
-        config = prev;
-    }
-}
-
-void ReadFromFile(double vector[], int N, char *filename);
-void WriteToFile(double vector[], int N, char *filename);
+config_option_t* ReadConfigFile(const char* filename); // reads the configuration.conf file
+const char* GetConfigValueFromKey(config_option_t* config, const char* key); // gets the value of the key
+void free_config(config_option_t* config); // frees the configuration
+void ReadFromFile(double vector[], int N, char *filename); // reads the vectors from the .dat files
+void WriteToFile(double vector[], int N, char *filename); // writes the result in a .dat file
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
@@ -63,18 +28,18 @@ int main(int argc, char *argv[]) {
     }
 
     // Read configuration file
-    config_option_t* config = read_config_file(argv[1]);
+    config_option_t* config = ReadConfigFile(argv[1]);
     if (!config) {
-        printf("Error reading configuration file\n");
+        printf("Error reading configuration file <%s>\n", argv[1]);
         return 1;
     }
 
     // Get parameters from configuration file
-    int N = atoi(get_config_value(config, "N"));
-    char *x_filename = strdup(get_config_value(config, "x_filename"));
-    char *y_filename = strdup(get_config_value(config, "y_filename"));
-    double a = atof(get_config_value(config, "a"));
-    char *output_prefix = strdup(get_config_value(config, "output_prefix"));
+    int N = atoi(GetConfigValueFromKey(config, "N"));
+    char *x_filename = strdup(GetConfigValueFromKey(config, "x_filename"));
+    char *y_filename = strdup(GetConfigValueFromKey(config, "y_filename"));
+    double a = atof(GetConfigValueFromKey(config, "a"));
+    char *output_prefix = strdup(GetConfigValueFromKey(config, "output_prefix"));
 
     // Allocate memory for vectors
     double *x = (double *)malloc(N * sizeof(double));
@@ -147,3 +112,46 @@ void WriteToFile(double vector[], int N, char *filename) {
 
     fclose(file);
 } 
+
+config_option_t* ReadConfigFile(const char* filename) {
+    FILE* file = fopen(filename, "r");
+    if (!file) return NULL;
+
+    config_option_t* current = NULL;
+    char line[320];  // 64 + 256 for key and value
+
+    while (fgets(line, sizeof(line), file)) {
+        char* key = strtok(line, "="); // split the line into key and value by the = sign
+        char* value = strtok(NULL, "\n"); // split the line into key and value by the newline character
+        
+        if (key && value) { 
+            config_option_t* new_option = malloc(sizeof(config_option_t)); 
+            strncpy(new_option->key, key, 63); // copy the key to the new option
+            strncpy(new_option->value, value, 255); // copy the value to the new option
+            new_option->prev = current; // set the previous option to the current option
+            current = new_option; // set the current option to the new option
+        }
+    }
+
+    fclose(file);
+    return current;
+}
+
+const char* GetConfigValueFromKey(config_option_t* config, const char* key) {
+    config_option_t* current = config;
+    while (current != NULL) {
+        if (strcmp(current->key, key) == 0) {
+            return current->value;
+        }
+        current = current->prev;
+    }
+    return NULL;
+}
+
+void free_config(config_option_t* config) {
+    while (config != NULL) {
+        config_option_t* prev = config->prev;
+        free(config);
+        config = prev;
+    }
+}

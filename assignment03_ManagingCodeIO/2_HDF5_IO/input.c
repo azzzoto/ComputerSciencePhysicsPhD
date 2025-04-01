@@ -1,3 +1,9 @@
+// given N as input, generates two vectors of size N, (x,y)
+// where all elements of x=0.1 and y = 7.1 and save them to a .h5 file
+// the output filenames should be created reading N and filename_prefix from the command line
+// also generates a configuration file for the process program
+
+// author: Giovanni Piccolo
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,7 +18,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    int N = atoi(argv[1]);
+    int N = atoi(argv[1]); //from string to int
     char *prefix = argv[2];
     
     // Memory allocation for vectors
