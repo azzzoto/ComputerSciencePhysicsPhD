@@ -11,11 +11,64 @@
 // Structure to hold configuration
 typedef struct {
     int N;
-    char x_filename[1024];
-    char y_filename[1024];
+    char x_filename[256];
+    char y_filename[256];
     double a;
-    char output_prefix[1024];
+    char output_prefix[256];
 } Config;
+
+Config ReadConfig(const char* filename);
+double* ReadVectorFromHDF5(const char* filename, const char* dataset_name, int N);
+void WriteVectorToHDF5(const char* filename, const char* dataset_name, double* vector, int N);
+
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        printf("Usage: %s <config_file>\n", argv[0]);
+        return 1;
+    }
+
+    // Read configuration
+    Config config = ReadConfig(argv[1]);
+
+    // Read vectors from HDF5 files
+    double* x = ReadVectorFromHDF5(config.x_filename, "vector_x", config.N);
+    double* y = ReadVectorFromHDF5(config.y_filename, "vector_y", config.N);
+
+    // Allocate memory for result vector
+    double* d = (double*)malloc(config.N * sizeof(double));
+    if (!d) {
+        printf("Memory allocation error\n");
+        free(x);
+        free(y);
+        return 1;
+    }
+
+    // Calculate d = ax + y
+    for (int i = 0; i < config.N; i++) {
+        d[i] = config.a * x[i] + y[i];
+    }
+
+    // Create output filename with larger buffer
+    int total_char_lenght = sizeof(config.output_prefix)+sizeof(config.N)+sizeof("_d.h5");
+    char output_filename[512];
+    snprintf(output_filename, 
+            total_char_lenght, 
+            "%sN%d_d.h5", 
+            config.output_prefix, 
+            config.N);
+
+    // Save result to HDF5 file
+    WriteVectorToHDF5(output_filename, "vector_d", d, config.N);
+
+    printf("Result saved in: %s\n", output_filename);
+
+    // Free memory
+    free(x);
+    free(y);
+    free(d);
+
+    return 0;
+} 
 
 // Function to read configuration
 Config ReadConfig(const char* filename) {
@@ -117,55 +170,3 @@ void WriteVectorToHDF5(const char* filename, const char* dataset_name, double* v
     H5Sclose(dataspace_id);
     H5Fclose(file_id);
 }
-
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        printf("Usage: %s <config_file>\n", argv[0]);
-        return 1;
-    }
-
-    // Read configuration
-    Config config = ReadConfig(argv[1]);
-
-    // Read vectors from HDF5 files
-    double* x = ReadVectorFromHDF5(config.x_filename, "vector_x", config.N);
-    double* y = ReadVectorFromHDF5(config.y_filename, "vector_y", config.N);
-
-    // Allocate memory for result vector
-    double* d = (double*)malloc(config.N * sizeof(double));
-    if (!d) {
-        printf("Memory allocation error\n");
-        free(x);
-        free(y);
-        return 1;
-    }
-
-    // Calculate d = ax + y
-    for (int i = 0; i < config.N; i++) {
-        d[i] = config.a * x[i] + y[i];
-    }
-
-    // Create output filename with larger buffer
-    char output_filename[2048];  // Aumentato a 2048 per essere sicuri
-    int written = snprintf(output_filename, sizeof(output_filename), "%sN%d.h5", 
-                          config.output_prefix, config.N);
-    if (written >= (int) sizeof(output_filename)) { // warning: comparison of integer expressions of different signedness: ‘int’ and ‘long unsigned int’
-        printf("Error: Output filename too long\n");
-        free(x);
-        free(y);
-        free(d);
-        return 1;
-    }
-
-    // Save result to HDF5 file
-    WriteVectorToHDF5(output_filename, "vector_d", d, config.N);
-
-    printf("Result saved in: %s\n", output_filename);
-
-    // Free memory
-    free(x);
-    free(y);
-    free(d);
-
-    return 0;
-} 
