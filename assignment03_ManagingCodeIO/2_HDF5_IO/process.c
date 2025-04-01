@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
         d[i] = config.a * x[i] + y[i];
     }
 
-    // Create output filename with larger buffer
+    // Create output filename
     int total_char_lenght = sizeof(config.output_prefix)+sizeof(config.N)+sizeof("_d.h5");
     char output_filename[512];
     snprintf(output_filename, 

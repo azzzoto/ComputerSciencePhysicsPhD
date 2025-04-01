@@ -20,36 +20,59 @@ typedef struct {
 } Config;
 
 // Function to read configuration
-Config ReadConfig(const char* filename) {
-    Config config;
-    FILE* file = fopen(filename, "r");
-    if (!file) {
-        printf("Error opening configuration file\n");
-        exit(1);
+Config ReadConfig(const char* filename);
+gsl_vector* ReadVectorFromHDF5(const char* filename, const char* dataset_name, int N);
+void WriteVectorToHDF5(const char* filename, const char* dataset_name, gsl_vector* vector);
+
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        printf("Usage: %s <config_file>\n", argv[0]);
+        return 1;
     }
 
-    char line[256];
-    while (fgets(line, sizeof(line), file)) {
-        if (line[0] == '#' || line[0] == '\n') continue; // Skip comments and empty lines
-        
-        char key[256], value[256];
-        if (sscanf(line, "%[^=]=%s", key, value) == 2) {
-            // Remove any whitespace
-            char* k = key;
-            char* v = value;
-            while (*k == ' ') k++;
-            while (*v == ' ') v++;
-            
-            if (strcmp(k, "N") == 0) config.N = atoi(v);
-            else if (strcmp(k, "x_filename") == 0) strcpy(config.x_filename, v);
-            else if (strcmp(k, "y_filename") == 0) strcpy(config.y_filename, v);
-            else if (strcmp(k, "a") == 0) config.a = atof(v);
-            else if (strcmp(k, "output_prefix") == 0) strcpy(config.output_prefix, v);
-        }
+    // Read configuration
+    Config config = ReadConfig(argv[1]);
+
+    // Read vectors from HDF5 files
+    gsl_vector* x = ReadVectorFromHDF5(config.x_filename, "vector_x", config.N);
+    gsl_vector* y = ReadVectorFromHDF5(config.y_filename, "vector_y", config.N);
+
+    // Create result vector
+    gsl_vector* d = gsl_vector_alloc(config.N);
+    if (!d) {
+        printf("Memory allocation error\n");
+        gsl_vector_free(x);
+        gsl_vector_free(y);
+        return 1;
     }
-    fclose(file);
-    return config;
-}
+
+    // Calculate d = ax + y using GSL's axpby
+    // axpby: y = alpha * x + beta * y
+    // In our case: d = a * x + 1 * y
+    gsl_vector_memcpy(d, y);  // First copy y to d
+    gsl_vector_axpby(config.a, x, 1.0, d);  // Then compute d = a*x + y
+
+    // Create output filename
+    int total_char_lenght = sizeof(config.output_prefix)+sizeof(config.N)+sizeof("_d.h5");
+    char output_filename[512];
+    snprintf(output_filename, 
+            total_char_lenght, 
+            "%sN%d_d.h5", 
+            config.output_prefix, 
+            config.N);
+
+    // Save result
+    WriteVectorToHDF5(output_filename, "vector_d", d);
+
+    printf("Result saved in: %s\n", output_filename);
+
+    // Free GSL vectors
+    gsl_vector_free(x);
+    gsl_vector_free(y);
+    gsl_vector_free(d);
+
+    return 0;
+} 
 
 // Function to read vector from HDF5 file
 gsl_vector* ReadVectorFromHDF5(const char* filename, const char* dataset_name, int N) {
@@ -120,55 +143,34 @@ void WriteVectorToHDF5(const char* filename, const char* dataset_name, gsl_vecto
     H5Fclose(file_id);
 }
 
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        printf("Usage: %s <config_file>\n", argv[0]);
-        return 1;
+// Function to read configuration
+Config ReadConfig(const char* filename) {
+    Config config;
+    FILE* file = fopen(filename, "r");
+    if (!file) {
+        printf("Error opening configuration file\n");
+        exit(1);
     }
 
-    // Read configuration
-    Config config = ReadConfig(argv[1]);
-
-    // Read vectors from HDF5 files
-    gsl_vector* x = ReadVectorFromHDF5(config.x_filename, "vector_x", config.N);
-    gsl_vector* y = ReadVectorFromHDF5(config.y_filename, "vector_y", config.N);
-
-    // Create result vector
-    gsl_vector* d = gsl_vector_alloc(config.N);
-    if (!d) {
-        printf("Memory allocation error\n");
-        gsl_vector_free(x);
-        gsl_vector_free(y);
-        return 1;
+    char line[1024];
+    while (fgets(line, sizeof(line), file)) {
+        if (line[0] == '#' || line[0] == '\n') continue; // Skip comments and empty lines
+        
+        char key[1024], value[1024];
+        if (sscanf(line, "%[^=]=%s", key, value) == 2) {
+            // Remove any whitespace
+            char* k = key;
+            char* v = value;
+            while (*k == ' ') k++;
+            while (*v == ' ') v++;
+            
+            if (strcmp(k, "N") == 0) config.N = atoi(v);
+            else if (strcmp(k, "x_filename") == 0) strcpy(config.x_filename, v);
+            else if (strcmp(k, "y_filename") == 0) strcpy(config.y_filename, v);
+            else if (strcmp(k, "a") == 0) config.a = atof(v);
+            else if (strcmp(k, "output_prefix") == 0) strcpy(config.output_prefix, v);
+        }
     }
-
-    // Calculate d = ax + y using GSL's axpby
-    // axpby: y = alpha * x + beta * y
-    // In our case: d = a * x + 1 * y
-    gsl_vector_memcpy(d, y);  // First copy y to d
-    gsl_vector_axpby(config.a, x, 1.0, d);  // Then compute d = a*x + y
-
-    // Create output filename with larger buffer
-    char output_filename[2048];  // Aumentato a 2048 per essere sicuri
-    int written = snprintf(output_filename, sizeof(output_filename), "%sN%d_d.h5", 
-                          config.output_prefix, config.N);
-    if (written >= (int) sizeof(output_filename)) {
-        printf("Error: Output filename too long\n");
-        gsl_vector_free(x);
-        gsl_vector_free(y);
-        gsl_vector_free(d);
-        return 1;
-    }
-
-    // Save result
-    WriteVectorToHDF5(output_filename, "vector_d", d);
-
-    printf("Result saved in: %s\n", output_filename);
-
-    // Free GSL vectors
-    gsl_vector_free(x);
-    gsl_vector_free(y);
-    gsl_vector_free(d);
-
-    return 0;
-} 
+    fclose(file);
+    return config;
+}
