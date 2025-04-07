@@ -19,17 +19,31 @@ void WriteResultsToFile(int N, double x_inf, double x_sup, double integral_trap,
 
 int main(int argc, char *argv[])
 {
-    if (argc != 4)
+    int N;
+    double x_inf, x_sup;
+
+    if (argc == 2)
+    {   
+        printf("------------------------------------------------\n");
+        printf("Using default integration arguments:\nx_inf=0\tx_sup=pi/2\n");
+        printf("------------------------------------------------\n");
+
+        N = atoi(argv[1]);
+        x_inf = 0;
+        x_sup = PI / 2;
+    }
+    else if (argc == 4)
     {
-        printf("Usage: %s <N> <x_inf> <x_sup>\n", argv[0]);
+        N = atoi(argv[1]);
+        x_inf = atof(argv[2]);
+        x_sup = atof(argv[3]);
+    }
+    else
+    {
+        printf("Usage: '%s <N>' OR '%s <N> <x_inf> <x_sup>'\n", argv[0], argv[0]);
         return 1;
     }
-
-    // read input parameters
-    int N = atoi(argv[1]);
-    double x_inf = atof(argv[2]);
-    double x_sup = atof(argv[3]);
-
+    
     // check if the input is valid
     if (N <= 0)
     {
@@ -129,6 +143,7 @@ double ComputeIntegralTrapeziodal(double x_inf, double x_sup, int N)
 // wrapper function for GSL
 double gsl_func(double x, void *params)
 {
+    (void)params; // for warnings about unused parameters
     return f(x);
 }
 
