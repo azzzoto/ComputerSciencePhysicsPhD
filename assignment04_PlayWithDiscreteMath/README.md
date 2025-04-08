@@ -186,4 +186,4 @@ The minimum relative error achievable depends on the method:
 ### 4. Comparison between C and Julia Results
 > Q: Using the output file you produce, use an interpreted language to calculate the same integral (call it $\mathbb{𝐼}_4$): is this output similar to the one in point 1? And how close it is? 
 
-The absolute error between C and Julia implementations (absrel = $|I - I_4|$) is typically very small ($\sim10^{-16}$) when using sufficient points, indicating good agreement between the two implementations. The Julia implementation can achieve higher precision due to BigFloat arithmetic, but at the cost of longer computation time.
+The absolute error between C and Julia implementations (absrel = $|I - I_4|$) is typically very small ($\sim10^{-10}$) when using sufficient points, indicating good agreement between the two implementations. The Julia implementation can achieve higher precision due to BigFloat arithmetic, but at the cost of longer computation time.
