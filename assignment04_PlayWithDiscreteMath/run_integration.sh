@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Clean and compile the C program
-echo "-----------------------------"
+echo "============================="
 echo "Cleaning and compiling C program..."
-echo "-----------------------------"
+echo "============================="
 make clean
 make
 
@@ -20,7 +20,7 @@ julia -e 'using Pkg; if !("Printf" in keys(Pkg.project().dependencies)) Pkg.add(
 
 # Check number of arguments
 if [ $# -lt 1 ]; then
-    echo "Usage: $0 <N> [x_inf x_sup]"
+    echo "Usage: $0 <N> [<x_inf> <x_sup>]"
     echo "  N: number of points"
     echo "  x_inf: lower integration limit (optional)"
     echo "  x_sup: upper integration limit (optional)"
@@ -33,9 +33,9 @@ x_inf=${2:-0}  # Default to 0 if not provided
 x_sup=${3:-1.5707963267948966}  # Default to pi/2 if not provided
 
 # Compile and run C program
-echo "-----------------------------"
+echo "============================="
 echo "Running C program..."
-echo "-----------------------------"
+echo "============================="
 if [ $# -eq 1 ]; then
     ./compute_integral $N
 else
@@ -44,16 +44,16 @@ fi
 
 # Check if C program ran successfully
 if [ $? -ne 0 ]; then
-    echo "-----------------------------"
+    echo "============================="
     echo "Error: C program failed to run"
-    echo "-----------------------------"
+    echo "============================="
     exit 1
 fi
 
 # Run Julia script
-echo "-----------------------------"
+echo "============================="
 echo "Running Julia script..."
-echo "-----------------------------"
+echo "============================="
 julia compare_integrals.jl
 
 # Check if Julia script ran successfully
@@ -62,5 +62,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "Integration completed successfully!"
-echo "Results are saved in c_integration_results.dat and julia_integration_results.dat" 
+echo "============================="
+printf "\nIntegration completed successfully!"
+printf "\nResults are saved in c_integration_results.dat and julia_integration_results.dat\n" 
+echo "============================="

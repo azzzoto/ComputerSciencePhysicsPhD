@@ -19,31 +19,22 @@ void WriteResultsToFile(int N, double x_inf, double x_sup, double integral_trap,
 
 int main(int argc, char *argv[])
 {
-    int N;
-    double x_inf, x_sup;
+    // Default values
+    int N = 1000;
+    double x_inf = 0.0;
+    double x_sup = PI / 2.0;
 
-    if (argc == 2)
-    {   
-        printf("------------------------------------------------\n");
-        printf("Using default integration arguments:\nx_inf=0\tx_sup=pi/2\n");
-        printf("------------------------------------------------\n");
-
+    // Parse command line arguments
+    if (argc >= 2) {
         N = atoi(argv[1]);
-        x_inf = 0;
-        x_sup = PI / 2;
     }
-    else if (argc == 4)
-    {
-        N = atoi(argv[1]);
+    if (argc >= 3) {
         x_inf = atof(argv[2]);
+    }
+    if (argc >= 4) {
         x_sup = atof(argv[3]);
     }
-    else
-    {
-        printf("Usage: '%s <N>' OR '%s <N> <x_inf> <x_sup>'\n", argv[0], argv[0]);
-        return 1;
-    }
-    
+
     // check if the input is valid
     if (N <= 0)
     {
@@ -194,24 +185,27 @@ void WriteResultsToFile(int N, double x_inf, double x_sup, double integral_trap,
     // Write header
     fprintf(file, "# Integration Results\n");
     fprintf(file, "# N = %d\n", N);
-    fprintf(file, "# Integration interval: [%.16f, %.16f]\n", x_inf, x_sup);
+    fprintf(file, "# Integration interval: [%.20f, %.20f]\n", x_inf, x_sup);
     fprintf(file, "#\n");
     fprintf(file, "# Method\tResult\t\tRelative Error\tTime (s)\n");
     fprintf(file, "#--------------------------------------------------------\n");
 
-    // Write results
-    fprintf(file, "Trapezoidal\t%.16f\t%.16f\t%.6f\n", 
+    // Write results with higher precision
+    fprintf(file, "Trapezoidal\t%.20f\t%.20f\t%.6f\n", 
             integral_trap, relative_error_trap, time_trap);
-    fprintf(file, "GSL\t%.16f\t%.16f\t%.6f\n", 
+    fprintf(file, "GSL\t\t%.20f\t%.20f\t%.6f\n", 
             integral_gsl, relative_error_gsl, time_gsl);
-    fprintf(file, "True\t%.16f\t0.0000000000000000\t0.000000\n", true_result);
+    fprintf(file, "True\t\t%.20f\t0.00000000000000000000\t0.000000\n", true_result);
 
     fclose(file);
-    printf("Results written to c_integration_results.dat\n");
+    printf("Results written to c_integration_results.dat\n\n");
 }
 
 // compute the relative error
 double CalculateRelativeError(double computed_result, double true_result)
 {
-    return fabs(computed_result / true_result - 1);
+    if (true_result == 0.0) {
+        return fabs(computed_result);
+    }
+    return fabs((computed_result - true_result) / true_result);
 }

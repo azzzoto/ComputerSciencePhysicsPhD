@@ -86,51 +86,57 @@ c_integral = df[df.Method .== "Trapezoidal", :Result][1]
 true_val = true_value()
 
 # Compute errors
-absolute_error_c_julia = abs(julia_integral - c_integral)
-relative_error_c_julia = abs(julia_integral / c_integral - 1)
+absolute_error_c_true = abs(c_integral - true_val)
+relative_error_c_true = abs(c_integral / true_val - 1)
 
-# Compute errors with respect to true value
 absolute_error_julia_true = abs(julia_integral - true_val)
 relative_error_julia_true = abs(julia_integral / true_val - 1)
 
-# Create final DataFrame with all results
-final_df = DataFrame(
-    Method = ["C", "Julia", "True Value"],
-    Result = [c_integral, julia_integral, true_val],
-    AbsoluteError_C_Julia = [BigFloat(0.0), absolute_error_c_julia, BigFloat(0.0)],
-    RelativeError_C_Julia = [df[df.Method .== "Trapezoidal", :RelativeError][1], relative_error_c_julia, BigFloat(0.0)],
-    AbsoluteError_Julia_True = [BigFloat(0.0), absolute_error_julia_true, BigFloat(0.0)],
-    RelativeError_Julia_True = [BigFloat(0.0), relative_error_julia_true, BigFloat(0.0)],
-    Time = [df[df.Method .== "Trapezoidal", :Time][1], julia_time, 0.0]
-)
+absolute_error_c_julia = abs(julia_integral - c_integral)
 
-# Print results with 20 significant digits
-println("\nIntegration Results:")
-println("----------------------------------------")
+# Print results in a clear format
+println("\nIntegration Results Comparison")
+println("--------------------------------")
 println("Parameters:")
 println("N = $N")
-println("Interval: [$x_inf, $x_sup]")
-println("\nResults Comparison:")
-for row in eachrow(final_df)
-    println("$(row.Method):")
-    println("  Result: $(@sprintf("%.20f", row.Result))")
-    println("  Absolute Error (C-Julia): $(@sprintf("%.20f", row.AbsoluteError_C_Julia))")
-    println("  Relative Error (C-Julia): $(@sprintf("%.20f", row.RelativeError_C_Julia))")
-    println("  Absolute Error (Julia-True): $(@sprintf("%.20f", row.AbsoluteError_Julia_True))")
-    println("  Relative Error (Julia-True): $(@sprintf("%.20f", row.RelativeError_Julia_True))")
-    println("  Time: $(row.Time) s")
-    println()
-end
+println("Integration interval: [$x_inf, $x_sup]")
+println("\nC vs True Value:")
+println("C Integral: $(@sprintf("%.20f", c_integral))")
+println("True Value: $(@sprintf("%.20f", true_val))")
+println("Absolute Error: $(@sprintf("%.20f", absolute_error_c_true))")
+println("Relative Error: $(@sprintf("%.20f", relative_error_c_true))")
+println("\nJulia vs True Value:")
+println("Julia Integral: $(@sprintf("%.20f", julia_integral))")
+println("True Value: $(@sprintf("%.20f", true_val))")
+println("Absolute Error: $(@sprintf("%.20f", absolute_error_julia_true))")
+println("Relative Error: $(@sprintf("%.20f", relative_error_julia_true))")
+println("\nC vs Julia Comparison:")
+println("Absolute Error: $(@sprintf("%.20f", absolute_error_c_julia))")
+println("\nExecution Times:")
+println("C: $(df[df.Method .== "Trapezoidal", :Time][1]) seconds")
+println("Julia: $julia_time seconds")
 
 # Save results to file
 open("julia_integration_results.dat", "w") do io
-    println(io, "# Julia Integration Results")
+    println(io, "# Integration Results Comparison")
     println(io, "# N = $N")
-    println(io, "# Interval: [$x_inf, $x_sup]")
+    println(io, "# Integration interval: [$x_inf, $x_sup]")
     println(io, "#")
-    println(io, "# Method\tResult\t\tAbsError(C-J)\tRelError(C-J)\tAbsError(J-T)\tRelError(J-T)\tTime (s)")
-    println(io, "#------------------------------------------------------------------------------------------------")
-    for row in eachrow(final_df)
-        println(io, "$(row.Method)\t$(@sprintf("%.20f", row.Result))\t$(@sprintf("%.20f", row.AbsoluteError_C_Julia))\t$(@sprintf("%.20f", row.RelativeError_C_Julia))\t$(@sprintf("%.20f", row.AbsoluteError_Julia_True))\t$(@sprintf("%.20f", row.RelativeError_Julia_True))\t$(row.Time)")
-    end
+    println(io, "# C vs True Value:")
+    println(io, "C_Integral=$(@sprintf("%.20f", c_integral))")
+    println(io, "True_Value=$(@sprintf("%.20f", true_val))")
+    println(io, "C_Absolute_Error=$(@sprintf("%.20f", absolute_error_c_true))")
+    println(io, "C_Relative_Error=$(@sprintf("%.20f", relative_error_c_true))")
+    println(io, "#")
+    println(io, "# Julia vs True Value:")
+    println(io, "Julia_Integral=$(@sprintf("%.20f", julia_integral))")
+    println(io, "Julia_Absolute_Error=$(@sprintf("%.20f", absolute_error_julia_true))")
+    println(io, "Julia_Relative_Error=$(@sprintf("%.20f", relative_error_julia_true))")
+    println(io, "#")
+    println(io, "# C vs Julia Comparison:")
+    println(io, "C_Julia_Absolute_Error=$(@sprintf("%.20f", absolute_error_c_julia))")
+    println(io, "#")
+    println(io, "# Execution Times:")
+    println(io, "C_Time=$(df[df.Method .== "Trapezoidal", :Time][1])")
+    println(io, "Julia_Time=$julia_time")
 end

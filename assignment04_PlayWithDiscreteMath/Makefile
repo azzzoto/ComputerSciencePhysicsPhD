@@ -9,4 +9,4 @@ compute_integral: compute_integral.c
 	$(CC) $(CFLAGS) $(HDF5_FLAGS) -o compute_integral compute_integral.c $(LDFLAGS)
 
 clean:
-	rm -f compute_integral *.dat *.txt
+	rm -f compute_integral *.dat *.txt *.png

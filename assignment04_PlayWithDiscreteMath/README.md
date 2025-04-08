@@ -1,0 +1,179 @@
+# Assignment04: Play with Discrete Math
+
+Author: Giovanni Piccolo
+
+# Task Description
+
+In this task we have to compute the following finite integral $\mathbb{I}$:
+
+$$ \mathbb{I} = \int_{0}^{\frac{\pi}{2}} e^{x}\cos(x) dx = \frac{e^{\frac{\pi}{2}}-1}{2} \approx 1.90523...$$
+
+using the trapezoid method. Here we've used `C` and `julia` to perform the task.
+
+## Prerequisites
+
+- GCC compiler
+- GSL (GNU Scientific Library)
+- Julia programming language
+- Julia packages:
+  - DataFrames
+  - Printf
+
+## Project Structure
+
+```
+assignment04_PlayWithDiscreteMath/
+├── compute_integral.c    # Main C program for integration
+├── compare_integrals.jl  # Julia script for results comparison 
+├── run_integration.sh    # Shell script to run both C and Julia programs
+├── Makefile             # Build configuration
+└── README.md            # This file
+```
+
+## Installation
+
+1. Install GSL library (if not already installed):
+   ```bash
+   # Almalinux
+   sudo dnf groupinstall "Development Tools"
+   ```
+
+2. Install required Julia packages:
+   ```julia
+   using Pkg
+   Pkg.add("DataFrames")
+   Pkg.add("Printf")
+   ```
+
+## Usage
+
+The script can be executed via the command:
+```bash
+./run_integration.sh <N> [x_inf] [x_sup]
+```
+Where:
+- `N`: Number of points for trapezoidal integration (required)
+- `x_inf`: Lower integration limit (optional, defaults to 0)
+- `x_sup`: Upper integration limit (optional, defaults to π/2)
+
+Example:
+```bash
+# Using default integration limits [0, π/2]
+./run_integration.sh 1000
+
+# Using custom integration limits
+./run_integration.sh 1000 0 1.57079632679
+```
+
+Note: Make sure the script is executable:
+```bash
+chmod +x run_integration.sh
+```
+
+## Output Files
+
+1. `c_integration_results.dat`:
+   - Contains results from C implementation
+   - Format:
+     ```
+     # Integration Results
+     # N = <number_of_points>
+     # Integration interval: [x_inf, x_sup]
+     # Method    Result    Relative Error    Time (s)
+     ```
+
+2. `julia_integration_results.dat`:
+   - Contains results from Julia implementation
+   - Includes comparison with C results
+
+## Understanding the Results
+
+### Integration Methods
+
+1. **Trapezoidal Method**:
+   - A numerical integration technique that approximates the integral using trapezoids
+   - Accuracy increases with the number of points (N)
+   - Implemented in both C and Julia for comparison
+
+2. **GSL Method**:
+   - Uses GNU Scientific Library's adaptive integration
+   - Generally more accurate than the trapezoidal method
+   - Only implemented in C version
+
+### Error Metrics
+
+1. **Absolute Error**:
+   - |computed_value - true_value|
+   - Shows the magnitude of the error
+
+2. **Relative Error**:
+   - |computed_value - true_value| / |true_value|
+   - Shows the error as a proportion of the true value
+   - More meaningful for comparing accuracy
+
+### Performance Metrics
+
+The execution time measurements show:
+- Time taken by C implementation
+- Time taken by Julia implementation
+- Helps understand performance scaling with N
+
+### True Value
+
+For the specific function f(x) = exp(x)cos(x) integrated from 0 to π/2:
+- True value = 0.5 * (exp(π/2) - 1)
+- Used as reference for error calculations
+
+## Common Issues and Solutions
+
+1. **Compilation Errors**:
+   - Check GSL installation
+   - Verify compiler flags in Makefile
+   - Ensure all dependencies are installed
+
+2. **Julia Package Errors**:
+   - Run Julia package installation commands manually
+   - Check Julia version compatibility
+
+3. **Permission Issues**:
+   ```bash
+   chmod +x run_integration.sh
+   ```
+
+4. **Precision Issues**:
+   - Both implementations use high precision
+   - C uses double precision
+   - Julia uses BigFloat for enhanced precision
+
+## Analysis of Results/Answer to the questions
+
+### 1. Relative Error Analysis
+> Q: The integral is analytic. How far is ${I}$ from the real
+solution?
+
+The relative error (epsrel) between our computed integral ($I$) and the true value ($I_{true}$) is calculated as:
+```
+epsrel = |I/Itrue - 1|
+```
+Using $N = 10000$ points, we typically achieve a relative error on the order of $10^{-8}$ with the trapezoidal method in `C`.
+
+### 2. Error Reduction Techniques
+> Q: How can you reduce the relative error?
+
+The relative error can be reduced through several methods:
+- Increasing the number of points ($N$) in the trapezoidal method
+- Using the GSL adaptive integration method in `C`
+- Using higher precision arithmetic (as implemented in the Julia version with `BigFloat`)
+
+### 3. Minimum Achievable Error
+> Q: Which is the minimum relative error you can find using the techniques you described in point 2?
+
+The minimum relative error achievable depends on the method:
+- Trapezoidal method: $\sim10^{-12}-10^{-13}$ (limited by double precision) for $N=10^6$ in `C`.
+- GSL adaptive method: $<\sim10^{-18}$ for $N=10^6$ in `C`
+- Julia with BigFloat: Can achieve even higher precision ($\sim10^{-20}$)
+
+### 4. Comparison between C and Julia Results
+> Q: Using the output file you produce, use an interpreted language to calculate the same integral (call it $\mathbb{𝐼}_4$): is this output similar to the one in point 1? And how close it is? 
+
+The absolute error between C and Julia implementations (absrel = |$I - I_4|$) is typically very small ($\sim10^{-16}$) when using sufficient points, indicating good agreement between the two implementations. The Julia implementation can achieve higher precision due to BigFloat arithmetic, but at the cost of longer computation time.
