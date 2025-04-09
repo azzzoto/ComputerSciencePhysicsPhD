@@ -16,8 +16,6 @@ chmod +x run_programs.sh
 ./run_programs.sh
 ```
 
-As an alternative, it is possible to run the programs using the Dockerfile. Please refer to the Dockerfile for more details.
-
 ## Exercise 1: `vector_components_sum.c`
 
 ### Description
@@ -93,7 +91,7 @@ The program:
 The results are printed on the terminal.
 
 ```bash
-root@dfad174b0f63 assignment05_FloatingPointAndRandom]# ./vector_components_sum 
+root@dfad174b0f63 assignment05_FloatingPointAndRandom] ./vector_components_sum 
 
 Results:
 ----------------------------
@@ -102,12 +100,6 @@ Sum with GSL    : -0.50000000000000000000
 Sum with Kahan  : 0.50000000000000000000
 ```
 
-It is very interesting to note that the sum using the for loop and the Kahan algorithm give the same result, while the sum using the `gsl_vector_sum` function gives a wrong result.
-
-Perfetto! Ecco una versione corretta e chiara del tuo testo in **inglese**, scritta in stile markdown, con le ipotesi espresse bene e con una struttura ordinata per aiutare la comprensione:
-
----
-
 ## Observations on Summation Accuracy
 
 It is very interesting to note that the summation using the `for` loop and the **Kahan summation algorithm** produce the same result, while the sum computed using the `gsl_vector_sum` function gives an incorrect result in certain cases.
@@ -115,6 +107,7 @@ It is very interesting to note that the summation using the `for` loop and the *
 I believe this discrepancy is due to the fact that the `for` loop and Kahan algorithm operate using `long double` precision, while the `gsl_vector_sum` function expects a `double`. Since I passed a `double` vector to the GSL function, and didn't cast it to `long double`, the difference in precision likely explains the inaccurate result.
 
 ### What I tested
+To prove my hypothesis, I tested the program with the following input vectors for the `gsl_vector_sum` function:
 
 1. **Edge case with large positive and negative values ordered from the largest to the smallest**  
    Input: `{-1e16, -0.5, 1.0, 1e16}`  
@@ -150,10 +143,10 @@ The real precision limit seems to be around **10¹⁶**, which aligns with the l
 
 This is likely why the GSL sum is incorrect in the last case. Using higher precision types like `long double` or using compensated summation algorithms (like Kahan) avoids this issue.
 
-## Exercise 2: Gaussian DAXPY
+## Exercise 2: `gaussian_daxpy.jl`
 
 ### Description
-Implementation of the DAXPY operation (d = ax + y) where x and y are vectors filled with Gaussian random variables.
+Julia implementation of the DAXPY operation (d = ax + y) where x and y are vectors filled with Gaussian random variables.
 
 ### Requirements
 - Julia programming language
@@ -172,12 +165,12 @@ julia gaussian_daxpy.jl
 julia gaussian_daxpy.jl <N> <a>
 ```
 Where:
-- `N`: Size of the vectors
-- `a`: Scalar multiplier
+- `N` (optional): Size of the vectors
+- `a` (optional): Scalar multiplier
 
 ### Implementation Details
 The program:
-1. Generates vectors x and y filled with the same Gaussian random variable N(0,1)
+1. Generates N-dim vectors x and y filled with the same Gaussian random variable N(0,1)
 2. Performs DAXPY operation: d = ax + y
 3. Verifies that all elements in d are computed correctly
 4. Writes results to files:
@@ -188,6 +181,8 @@ The program:
 Given x and y filled with the same Gaussian random variable:
 - x[i] = X ~ N(0,1) for all i
 - y[i] = Y ~ N(0,1) for all i
+
+we compute the DAXPY operation:
 - d[i] = aX + Y for all i
 
 ### Output Files Format
