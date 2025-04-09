@@ -10,4 +10,4 @@ vector_components_sum: vector_components_sum.c
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< $(LDFLAGS)
 
 clean:
-	rm -f vector_components_sum *.o
+	rm -f vector_components_sum *.o *.dat
