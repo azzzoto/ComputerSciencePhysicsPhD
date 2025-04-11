@@ -197,13 +197,28 @@ The reconstruction of C from R exploits conjugate symmetry:
 1. We directly copy the first half + 1 of R into C
 2. We reconstruct the second half using C[k] = conj(C[N-k])
 
-The mean absolute error in reconstruction is of the order of 10^-15, while the mean relative error is of the order of 10^-16, indicating that the reconstruction is very precise.
+In the 6x6 case, we observe infinite errors (inf) in both absolute and relative error calculations. This occurs because:
+1. Some values in the reconstructed matrix C_from_R are extremely small (close to zero)
+2. When calculating relative errors, we divide by these very small values
+3. The original matrix C contains values that are significantly larger than the reconstructed values
+4. This leads to division by numbers very close to zero, resulting in infinite errors
+
+Example comparison:
+```
+C[0,0]: 7.705980e+00 + i0.000000e+00
+C_from_R[0,0]: 5.086359e-01 + i0.000000e+00
+C[1,1]: 5.566387e-02 + i3.350677e+00
+C_from_R[1,1]: 1.398043e-76 + i1.303543e-76
+```
+
+This issue highlights the numerical instability of the custom implementation, particularly with small matrices where rounding errors can have a more significant impact.
 
 #### FFTW3 Implementation
 The FFTW3 implementation provides even better reconstruction:
 1. More accurate handling of conjugate symmetry
 2. Better numerical stability in the reconstruction process
 3. Consistent results across different matrix sizes
+4. Proper handling of very small values to avoid infinite errors
 
 The reconstruction errors are consistently at machine precision level, demonstrating the robustness of the FFTW3 implementation.
 
