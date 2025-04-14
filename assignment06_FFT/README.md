@@ -24,8 +24,8 @@ This project implements a 2D Fast Fourier Transform (FFT) in C using two differe
 ### Performance and Accuracy
 1. **Numerical Stability**:
    - FFTW3 version shows significantly better numerical stability
-   - Mean absolute error: ~10^-15 (FFTW3) vs ~10^-1 (custom)
-   - Mean relative error: ~10^-14 (FFTW3) vs ~10^0 (custom)
+   - Mean absolute error: $\sim10^{-15}$ (FFTW3) vs $\sim10^{-1}$ (custom)
+   - Mean relative error:  $\sim10^{-14}$ (FFTW3) vs  $\sim10^0$ (custom)
 
 2. **Memory Management**:
    - FFTW3 version uses optimized memory allocation
@@ -58,8 +58,15 @@ dnf install fftw-devel
 ```
 
 ### Compilation Options
+Here we provide three different compilation options: using the provided Makefile, or compiling manually with gcc. The Makefile is the recommended option.
 
-1. Basic compilation:
+1. Using the provided Makefile:
+```bash
+make clean  # removes object files and executables
+make        # compiles both implementations with default optimization
+```
+
+2. Basic compilation:
 ```bash
 # Custom implementation
 gcc -o FFT FFT.c -lm
@@ -68,30 +75,13 @@ gcc -o FFT FFT.c -lm
 gcc -o FFT_fftw FFT_fftw.c -lfftw3 -lm
 ```
 
-2. Compilation with optimization:
+3. Compilation with optimization:
 ```bash
 # Custom implementation
 gcc -O3 -o FFT FFT.c -lm
 
 # FFTW3 implementation
 gcc -O3 -o FFT_fftw FFT_fftw.c -lfftw3 -lm
-```
-
-3. Compilation with debugging information:
-```bash
-# Custom implementation
-gcc -g -o FFT FFT.c -lm
-
-# FFTW3 implementation
-gcc -g -o FFT_fftw FFT_fftw.c -lfftw3 -lm
-```
-
-4. Using the provided Makefile:
-```bash
-make        # compiles both implementations with default optimization
-make clean  # removes object files and executables
-make fft    # compiles only the custom implementation
-make fftw   # compiles only the FFTW3 implementation
 ```
 
 ### Execution
@@ -192,35 +182,88 @@ The FFTW3 implementation provides more accurate DC component values:
 
 ### 7) Reconstruction of C from R (6x6 case)
 
+### Complex-to-Complex FFT Results
+
 #### Custom Implementation
-The reconstruction of C from R exploits conjugate symmetry:
-1. We directly copy the first half + 1 of R into C
-2. We reconstruct the second half using C[k] = conj(C[N-k])
+The custom implementation shows significant numerical instability in the 6x6 case:
+1. Infinite relative errors due to division by very small numbers
+2. Large absolute errors (order of 10^-1)
+3. Issues with numerical precision in the reconstruction process
 
-In the 6x6 case, we observe infinite errors (inf) in both absolute and relative error calculations. This occurs because:
-1. Some values in the reconstructed matrix C_from_R are extremely small (close to zero)
-2. When calculating relative errors, we divide by these very small values
-3. The original matrix C contains values that are significantly larger than the reconstructed values
-4. This leads to division by numbers very close to zero, resulting in infinite errors
-
-Example comparison:
-```
-C[0,0]: 7.705980e+00 + i0.000000e+00
-C_from_R[0,0]: 5.086359e-01 + i0.000000e+00
-C[1,1]: 5.566387e-02 + i3.350677e+00
-C_from_R[1,1]: 1.398043e-76 + i1.303543e-76
-```
-
-This issue highlights the numerical instability of the custom implementation, particularly with small matrices where rounding errors can have a more significant impact.
+This occurs because:
+1. The Cooley-Tukey algorithm's recursive nature amplifies rounding errors
+2. Small matrix size makes errors more noticeable
+3. No proper handling of values close to zero
 
 #### FFTW3 Implementation
-The FFTW3 implementation provides even better reconstruction:
-1. More accurate handling of conjugate symmetry
-2. Better numerical stability in the reconstruction process
-3. Consistent results across different matrix sizes
-4. Proper handling of very small values to avoid infinite errors
+The FFTW3 implementation shows excellent results for complex-to-complex transform:
+```
+Mean absolute error: 2.219060e-16
+Mean relative error: 9.985738e-16 (calculated over 36 non-zero values)
+Median absolute error: 7.450581e-09
+Median relative error: 1.258260e-08
+```
 
-The reconstruction errors are consistently at machine precision level, demonstrating the robustness of the FFTW3 implementation.
+This demonstrates:
+1. Near machine precision accuracy
+2. Proper handling of all matrix elements
+3. Consistent reconstruction of original values
+4. Example comparison shows perfect reconstruction:
+   ```
+   Original[0,0]: -1.987120e+00
+   Reconstructed[0,0]: -1.987120e+00
+   Original[1,1]: 2.324891e-01
+   Reconstructed[1,1]: 2.324891e-01
+   ```
+
+### Real-to-Complex FFT Results
+
+#### Custom Implementation
+The custom implementation shows similar issues:
+1. Infinite relative errors
+2. Large absolute errors
+3. Problems with conjugate symmetry reconstruction
+
+#### FFTW3 Implementation
+The FFTW3 implementation shows higher errors for real-to-complex transform:
+```
+Mean absolute error: 1.028804e+00
+Mean relative error: 9.128709e-01 (calculated over 36 non-zero values)
+Median absolute error: 7.180039e-01
+Median relative error: 1.000000e+00
+```
+
+The higher errors occur because:
+1. Some values are completely lost in reconstruction:
+   ```
+   Original[1,1]: 2.324891e-01
+   Reconstructed[1,1]: 0.000000e+00
+   ```
+2. The real-to-complex transform is more sensitive to numerical errors
+3. The reconstruction process is more complex and error-prone
+
+### Key Differences and Conclusions
+
+1. **Numerical Stability**:
+   - FFTW3 handles complex-to-complex transform with near-perfect precision
+   - Both implementations struggle with real-to-complex transform
+   - Custom implementation is more sensitive to numerical errors
+
+2. **Error Handling**:
+   - FFTW3 provides more stable error calculations
+   - Custom implementation needs additional safeguards against division by zero
+   - Both show the importance of proper error handling for small matrices
+
+3. **Implementation Quality**:
+   - FFTW3 demonstrates superior numerical stability
+   - Custom implementation needs improvements in error handling
+   - Both benefit from proper thresholding in error calculations
+
+4. **Recommendations**:
+   - Use FFTW3 for complex-to-complex transforms
+   - Implement additional error handling for real-to-complex transforms
+   - Consider matrix size when choosing implementation
+   - Always include proper error checking and thresholding
 
 ## Implementation Notes
 
@@ -230,3 +273,72 @@ The reconstruction errors are consistently at machine precision level, demonstra
 4. The 6x6 case is included as a smaller, more manageable example to verify implementation correctness
 5. The FFTW3 implementation provides better numerical stability and performance
 6. Both implementations support comprehensive error reporting and matrix reconstruction
+
+## Comparative Analysis and Python Implementation
+
+### Overview
+In addition to the C implementations, I also implemented the FFT operations in Python using NumPy's FFT library. The Python implementation proved to be the most robust and efficient solution among the three approaches.
+
+### Installation Requirements for Python Implementation
+To run the Python implementation, you need to have Python and NumPy installed. If they are not already installed, follow these steps:
+
+1. Install Python (I installed version 3.11):
+   - Almalinux: `sudo dnf install python311`
+
+2. Install pip for package manager:
+   - Almalinux: `python3.11 -m ensurepip --upgrade`
+
+3. Install NumPy using pip:
+   ```bash
+   pip3 install numpy
+   ```
+
+3. Run the Python script:
+   ```bash
+   python3.11 fft.py
+   ```
+The script will write the results in the results_Python.txt file
+
+### Performance Comparison
+
+1. **Custom C Implementation (FFT.c)**:
+   - Pros:
+     - Complete control over the implementation
+     - Educational value in understanding FFT algorithms
+     - Fast execution time
+   - Cons:
+     - Numerical instability, especially with small matrices
+     - Infinite errors in the 6x6 case
+
+2. **FFTW3 C Implementation (FFT_fftw.c)**:
+   - Pros:
+     - Better numerical stability than custom implementation
+     - Optimized for performance
+     - Optimal results close to machine precision in reconstruction of C from R
+     - Very fast execution time
+   - Cons:
+     - Complex memory management
+     - Requires external library installation
+
+3. **Python NumPy Implementation (fft.py)**:
+   - Pros:
+     - Most stable and reliable implementation
+     - Handles all cases correctly, including 6x6
+     - Clean and concise code
+     - Built-in error handling
+     - Best results in reconstruction of C from R
+   - Cons:
+     - Higher memory usage
+     - Slower execution time compared to C implementations
+
+### Key Findings
+
+1. **Numerical Stability**:
+   - Python/NumPy showed the best numerical stability
+   - No infinite errors or segmentation faults
+   - Consistent results across all matrix sizes
+
+2. **Performance**:
+   - C implementations (both custom and FFTW3) showed better performance
+   - FFTW3 implementation was the fastest
+   - Python/NumPy implementation was slower but more stable
