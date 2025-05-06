@@ -17,26 +17,27 @@ expected_result = [a * 0.1 + 7.1, a * 0.2 + 7.2, a * 0.3 + 7.3]
 
 test_d = daxpy(a, test_x, test_y)
 
-# Output length should match input length
 @test length(test_d) == length(test_x)
-# Output values should match expected results
+println("[PASSED] Length of output matches input length")
+
 @test test_d == expected_result 
+println("[PASSED] Output values match expected results")
 
 # Edge case: empty input
 empty_x = Float64[]
 empty_y = Float64[]
 empty_result = daxpy(a, empty_x, empty_y)
 
-# Output should be empty for empty input
 @test isempty(empty_result) 
+println("[PASSED] Output is empty for empty input")
 
 # Edge case: single element input
 single_x = [0.1]
 single_y = [7.1]
 single_result = daxpy(a, single_x, single_y)
 
-# Output should match expected result for single element input
 @test single_result == [a * 0.1 + 7.1] 
+println("[PASSED] Output matches expected result for single element input")
 
 # ------- MAIN PROGRAM -------
 # loop over the different values of N
