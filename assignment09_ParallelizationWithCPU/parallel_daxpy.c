@@ -7,22 +7,35 @@ void compute_standard_daxpy(int N, double *x, double *y, double *d);
 
 int main(int argc, char *argv[])
 {
+    // Default values
+    int DIM = 10000000;
+    double x_modulus = 2.5;
+    double y_modulus = 3.7;
+
     // validate arguments
-    if (argc != 4)
+    if (argc != 1 && argc != 4)
     {
-        fprintf(stderr, "Usage: %s <DIM> <x_modulus> <y_modulus>\n", argv[0]);
+        fprintf(stderr, "Usage: %s [<DIM> <x_modulus> <y_modulus>]\n", argv[0]);
+        fprintf(stderr, "If no arguments provided, default values will be used: DIM=%d, x_modulus=%.1f, y_modulus=%.1f\n", DIM, x_modulus, y_modulus);
         return EXIT_FAILURE;
     }
 
-    // get arguments
-    int DIM = atoi(argv[1]);
-    double x_modulus = atof(argv[2]);
-    double y_modulus = atof(argv[3]);
-
-    if (DIM <= 0 || x_modulus <= 0 || y_modulus <= 0)
+    // get arguments if provided
+    if (argc == 4)
     {
-        fprintf(stderr, "Invalid arguments. DIM, x_modulus, and y_modulus must be positive.\n");
-        return EXIT_FAILURE;
+        DIM = atoi(argv[1]);
+        x_modulus = atof(argv[2]);
+        y_modulus = atof(argv[3]);
+
+        if (DIM <= 0 || x_modulus == 0 || y_modulus == 0)
+        {
+            fprintf(stderr, "Invalid arguments. DIM must be positive, and x_modulus, and y_modulus must be non-zero.\n");
+            return EXIT_FAILURE;
+        }
+    }
+    else
+    {
+        printf("Using default parameters: DIM=%d, x_modulus=%.1f, y_modulus=%.1f\n", DIM, x_modulus, y_modulus);
     }
 
     // allocate memory
@@ -66,6 +79,20 @@ int main(int argc, char *argv[])
     double omp_end = omp_get_wtime();
     double omp_time = omp_end - omp_start;
     printf("Elapsed OpenMP time: %.6f seconds\n", omp_time);
+
+    // compare results
+    double delta_time = (standard_time - omp_time) * 100 / standard_time; 
+
+    printf("---------------------------------------------------------\n");
+    if (delta_time < 0)
+    {
+        printf("Standard time results %.2f %% faster wrt OpenMP time \n", -delta_time);
+    }
+    else
+    {
+        printf("OpenMP Time results %.2f %% faster wrt standard time \n", delta_time);
+    }
+    printf("---------------------------------------------------------\n");
 
     // free memory
     free(x);
