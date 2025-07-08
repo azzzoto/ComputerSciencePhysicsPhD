@@ -1,1 +1,5 @@
+# custom folders
 /.vscode
+
+# custom files
+*.pdf

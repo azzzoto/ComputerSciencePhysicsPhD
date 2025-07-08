@@ -1,1 +1,1 @@
-Here some assignment for CompSciPhysCourse
+Here we try to solve the assignment for CompSciPhysCourse PhD Course @ UniPD
